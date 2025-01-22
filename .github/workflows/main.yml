@@ -6,6 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
+        id: snyk
         uses: snyk/actions/node@master
         continue-on-error: true # To make sure that SARIF upload gets called
         env:
@@ -19,11 +20,13 @@ jobs:
           sarif_file: snyk.sarif
 
       - name: Create zip
+        if: steps.snyk.outcome == 'success'
         uses: montudor/action-zip@v1
         with:
           args: zip -qq -r code.zip .
 
       - name: Upload zip as artifact
+        if: steps.snyk.outcome == 'success'
         uses: actions/upload-artifact@v3
         with:
           name: code
